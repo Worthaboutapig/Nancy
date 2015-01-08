@@ -11,3 +11,4 @@ using System.Reflection;
 [assembly: AssemblyInformationalVersion("0.23.2")]
 
 [assembly: InternalsVisibleTo("Nancy.Tests")]
+[assembly: InternalsVisibleTo("Nancy.Authentication.Forms.Tests")]
