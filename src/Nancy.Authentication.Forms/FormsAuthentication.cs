@@ -100,7 +100,7 @@ namespace Nancy.Authentication.Forms
             currentConfiguration = configuration;
 
             module.Before.AddItemToStartOfPipeline(GetLoadAuthenticationHook(configuration));
-            
+
             if (!configuration.DisableRedirect)
             {
                 module.After.AddItemToEndOfPipeline(GetRedirectToLoginHook(configuration));
@@ -277,9 +277,9 @@ namespace Nancy.Authentication.Forms
             {
                 return Guid.Empty;
             }
-            
+
             var cookieValueEncrypted = context.Request.Cookies[formsAuthenticationCookieName];
-            
+
             if (string.IsNullOrEmpty(cookieValueEncrypted))
             {
                 return Guid.Empty;
@@ -412,7 +412,7 @@ namespace Nancy.Authentication.Forms
             {
                 redirectQuerystringKey = configuration.RedirectQuerystringKey;
             }
-            
+
             if(string.IsNullOrWhiteSpace(redirectQuerystringKey))
             {
                 redirectQuerystringKey = FormsAuthenticationConfiguration.DefaultRedirectQuerystringKey;
