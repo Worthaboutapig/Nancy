@@ -73,7 +73,8 @@ namespace Nancy.Responses.Negotiation
         {
             get
             {
-                return this.Type.IsWildcard && this.Subtype.IsWildcard;
+                var matches = this.Type.IsWildcard && this.Subtype.IsWildcard;
+                return matches;
             }
         }
 
@@ -84,7 +85,8 @@ namespace Nancy.Responses.Negotiation
         /// <returns>True if matching, false if not</returns>
         public bool Matches(MediaRange other)
         {
-            return this.Type.Matches(other.Type) && this.Subtype.Matches(other.Subtype);
+            var matches = this.Type.Matches(other.Type) && this.Subtype.Matches(other.Subtype);
+            return matches;
         }
 
         /// <summary>
@@ -94,9 +96,21 @@ namespace Nancy.Responses.Negotiation
         /// <returns>True if matching, false if not</returns>
         public bool MatchesWithParameters(MediaRange other)
         {
-            return this.Matches(other) && this.Parameters.Matches(other.Parameters);
+            var matches = this.Matches(other) && this.Parameters.Matches(other.Parameters);
+            return matches;
         }
 
+        /// <summary>
+        /// Whether or not a media range matches another exactly
+        /// </summary>
+        /// <param name="other">Other media range</param>
+        /// <returns>True if matching, false if not</returns>
+        public bool MatchesExactly(MediaRange other)
+        {
+            var matches = this.Type.MatchesExactly(other.Type) && this.Subtype.MatchesExactly(other.Subtype);
+            return matches;
+        }
+        
         /// <summary>
         /// Creates a MediaRange from a "Type/SubType" string
         /// </summary>
