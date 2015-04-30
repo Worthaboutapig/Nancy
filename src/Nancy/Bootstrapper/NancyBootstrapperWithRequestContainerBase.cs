@@ -13,7 +13,7 @@ namespace Nancy.Bootstrapper
     /// </summary>
     /// <typeparam name="TContainer">IoC container type</typeparam>
     public abstract class NancyBootstrapperWithRequestContainerBase<TContainer> : NancyBootstrapperBase<TContainer>
-        where TContainer : class
+		where TContainer : class
     {
         protected NancyBootstrapperWithRequestContainerBase()
         {

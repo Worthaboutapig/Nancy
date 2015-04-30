@@ -1,6 +1,6 @@
 ﻿namespace Nancy.Validation
 {
-    using System.Linq;
+	using System.Linq;
 
     /// <summary>
     /// Extensions to <see cref="INancyModule"/> for validation.
@@ -16,9 +16,9 @@
         /// <returns>A <see cref="ModelValidationResult"/> instance.</returns>
         public static ModelValidationResult Validate<T>(this INancyModule module, T instance)
         {
-            var validator =
-                module.ValidatorLocator.GetValidatorForType(typeof(T));
-
+			var type = typeof(T) == typeof(object) ? instance.GetType() : typeof(T);
+            var validator = module.ValidatorLocator.GetValidatorForType(type);
+			
             var result = (validator == null) ?
                 new ModelValidationResult() :
                 validator.Validate(instance, module.Context);
@@ -32,7 +32,6 @@
             module.ModelValidationResult = module.ModelValidationResult.Errors.Any()
                                                ? module.ModelValidationResult
                                                : result;
-
             return module.ModelValidationResult;
         }
     }

@@ -39,10 +39,20 @@ namespace Nancy.Responses.Negotiation
         {
             return this.IsWildcard ||
                    other.IsWildcard ||
-                   this.type.Equals(other.type, StringComparison.InvariantCultureIgnoreCase);
+                   MatchesExactly(other);
         }
 
-        public static implicit operator MediaType(string inputString)
+		/// <summary>
+		/// Matched the media type with another media type exactly.
+		/// </summary>
+		/// <param name="other">The media type that should be matched against.</param>
+		/// <returns><see langword="true" /> if the media types match, otherwise <see langword="false" />.</returns>
+		public bool MatchesExactly(MediaType other)
+		{
+			return this.type.Equals(other.type, StringComparison.InvariantCultureIgnoreCase);
+		}
+		
+		public static implicit operator MediaType(string inputString)
         {
             return new MediaType(inputString);
         }

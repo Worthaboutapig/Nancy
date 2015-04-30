@@ -41,7 +41,7 @@ namespace Nancy.Testing
         /// in order to try and resolve the name of the assembly that is under test so
         /// that all of its references can be loaded into the application domain.
         /// </summary>
-        public static IList<string> TestAssemblySuffixes = new[] { "test", "tests", "unittests", "specs", "specifications" };
+        public static IList<string> TestAssemblySuffixes = new[] { "unit", "integration", "test", "tests", "unittests", "specs", "specifications" };
 
         private bool allDiscoveredModules;
         private bool autoRegistrations = true;

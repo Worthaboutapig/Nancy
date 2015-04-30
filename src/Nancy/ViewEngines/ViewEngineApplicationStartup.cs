@@ -34,15 +34,9 @@ namespace Nancy.ViewEngines
         {
             foreach (var viewEngine in viewEngines)
             {
-                viewEngine.Initialize(CreateViewEngineStartupContext(viewEngine));
+				var viewEngineStartupContext = new ViewEngineStartupContext(this.viewCache, this.viewLocator);
+                viewEngine.Initialize(viewEngineStartupContext);
             }
-        }
-
-        private ViewEngineStartupContext CreateViewEngineStartupContext(IViewEngine viewEngine)
-        {
-            return new ViewEngineStartupContext(
-                this.viewCache,
-                this.viewLocator);
         }
     }
 }

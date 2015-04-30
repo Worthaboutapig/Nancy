@@ -143,7 +143,7 @@
             sb.AppendFormat("[DefaultResponseNegotiator] Acceptable media ranges: {0}\n", allowableFormats);
         }
 
-        private IEnumerable<CompatibleHeader> GetCompatibleHeaders(
+        private IEnumerable<Tuple<CompatibleHeader, dynamic>> GetCompatibleHeaders(
             IEnumerable<Tuple<string, decimal>> coercedAcceptHeaders,
             NegotiationContext negotiationContext,
             NancyContext context)
@@ -159,7 +159,7 @@
 
                 if (compatibleProcessors.Any())
                 {
-                    yield return new CompatibleHeader(header.Item1, compatibleProcessors);
+                    yield return new Tuple<CompatibleHeader, dynamic>(new CompatibleHeader(header.Item1, compatibleProcessors), mediaRangeModel);
                 }
             }
         }
@@ -210,11 +210,11 @@
         /// <param name="context">The context.</param>
         /// <returns>A <see cref="Response"/>.</returns>
         private static Response CreateResponse(
-            IList<CompatibleHeader> compatibleHeaders,
+            IList<Tuple<CompatibleHeader, dynamic>> compatibleHeaders,
             NegotiationContext negotiationContext,
             NancyContext context)
         {
-            var response = NegotiateResponse(compatibleHeaders, negotiationContext, context);
+            var response = NegotiateResponse(compatibleHeaders, context);
 
             if (response == null)
             {
@@ -226,7 +226,7 @@
 
             response.WithHeader("Vary", "Accept");
 
-            AddLinkHeader(compatibleHeaders, response, context.Request.Url);
+            AddLinkHeader(compatibleHeaders.Select(ch => ch.Item1), response, context.Request.Url);
             SetStatusCode(negotiationContext, response);
             SetReasonPhrase(negotiationContext, response);
             AddCookies(negotiationContext, response);
@@ -250,12 +250,12 @@
         /// <param name="context">The context.</param>
         /// <returns>Response.</returns>
         private static Response NegotiateResponse(
-            IEnumerable<CompatibleHeader> compatibleHeaders,
-            NegotiationContext negotiationContext,
+			IEnumerable<Tuple<CompatibleHeader, dynamic>> compatibleHeaders,
             NancyContext context)
         {
-            foreach (var compatibleHeader in compatibleHeaders)
+            foreach (var compatibleHeader1 in compatibleHeaders)
             {
+	            var compatibleHeader = compatibleHeader1.Item1;
                 var prioritizedProcessors = compatibleHeader.Processors
                     .OrderByDescending(x => x.Item2.ModelResult)
                     .ThenByDescending(x => x.Item2.RequestedContentTypeResult);
@@ -267,9 +267,9 @@
                     context.WriteTraceLog(sb =>
                         sb.AppendFormat("[DefaultResponseNegotiator] Invoking processor: {0}\n", processorType));
 
-                    var mediaRangeModel = negotiationContext.GetModelForMediaRange(compatibleHeader.MediaRange);
+                    //var mediaRangeModel = negotiationContext.GetModelForMediaRange(compatibleHeader.MediaRange);
 
-                    var response = prioritizedProcessor.Item1.Process(compatibleHeader.MediaRange, mediaRangeModel, context);
+					var response = prioritizedProcessor.Item1.Process(compatibleHeader.MediaRange, compatibleHeader1.Item2, context);
                     if (response != null)
                     {
                         return response;

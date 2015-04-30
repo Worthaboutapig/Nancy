@@ -8,6 +8,21 @@ namespace Nancy.Responses.Negotiation
     /// </summary>
     public class MediaRange
     {
+		/// <summary>
+		/// 
+		/// </summary>
+		public static readonly MediaRange Any = new MediaRange("*/*");
+		
+		/// <summary>
+	    /// 
+	    /// </summary>
+	    public static readonly MediaRange ApplicationJson = new MediaRange("application/json");
+		
+		/// <summary>
+		/// 
+		/// </summary>
+		public static readonly MediaRange TextHtml = new MediaRange("text/html");
+
         /// <summary>
         /// Initializes a new instance of the <see cref="MediaRange"/> class from a string representation of a media range
         /// </summary>
@@ -84,7 +99,8 @@ namespace Nancy.Responses.Negotiation
         /// <returns>True if matching, false if not</returns>
         public bool Matches(MediaRange other)
         {
-            return this.Type.Matches(other.Type) && this.Subtype.Matches(other.Subtype);
+            var matches = this.Type.Matches(other.Type) && this.Subtype.Matches(other.Subtype);
+	        return matches;
         }
 
         /// <summary>
@@ -97,7 +113,18 @@ namespace Nancy.Responses.Negotiation
             return this.Matches(other) && this.Parameters.Matches(other.Parameters);
         }
 
-        /// <summary>
+		/// <summary>
+		/// Whether or not a media range matches another exactly
+		/// </summary>
+		/// <param name="other">Other media range</param>
+		/// <returns>True if matching, false if not</returns>
+		public bool MatchesExactly(MediaRange other)
+		{
+			var matches = this.Type.MatchesExactly(other.Type) && this.Subtype.MatchesExactly(other.Subtype);
+			return matches;
+		}
+		
+		/// <summary>
         /// Creates a MediaRange from a "Type/SubType" string
         /// </summary>
         /// <param name="contentType"></param>

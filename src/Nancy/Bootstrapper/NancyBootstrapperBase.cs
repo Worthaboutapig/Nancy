@@ -267,7 +267,8 @@
             this.RegisterInstances(this.ApplicationContainer, instanceRegistrations);
             this.RegisterRegistrationTasks(this.GetRegistrationTasks());
 
-            foreach (var applicationStartupTask in this.GetApplicationStartupTasks().ToList())
+	        var a = GetApplicationStartupTasks().ToList();
+            foreach (var applicationStartupTask in a)
             {
                 applicationStartupTask.Initialize(this.ApplicationPipelines);
             }

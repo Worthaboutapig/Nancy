@@ -3,12 +3,12 @@
     using System.Collections.Generic;
 
     /// <summary>
-    /// Definies the functiinality used by Nancy to located a view.
+    /// Defines the functionality used by Nancy to locate a view.
     /// </summary>
     public interface IViewLocationProvider
     {
         /// <summary>
-        /// Returns an <see cref="ViewLocationResult"/> instance for all the views that could be located by the provider.
+        /// Returns a <see cref="ViewLocationResult"/> instance for all the views that could be located by the provider.
         /// </summary>
         /// <param name="supportedViewExtensions">An <see cref="IEnumerable{T}"/> instance, containing the view engine file extensions that is supported by the running instance of Nancy.</param>
         /// <returns>An <see cref="IEnumerable{T}"/> instance, containing <see cref="ViewLocationResult"/> instances for the located views.</returns>

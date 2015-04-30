@@ -23,7 +23,10 @@
         private readonly IRazorConfiguration razorConfiguration;
         private readonly IEnumerable<IRazorViewRenderer> viewRenderers;
         private readonly object compileLock = new object();
+        private Func<string> lastViewSuccessfullyRendered;
 
+        public Stack<Func<string>> RenderedViews { get; private set; }
+        
         /// <summary>
         /// Gets the extensions file extensions that are supported by the view engine.
         /// </summary>
@@ -40,6 +43,8 @@
         /// <param name="configuration">The <see cref="IRazorConfiguration"/> that should be used by the engine.</param>
         public RazorViewEngine(IRazorConfiguration configuration)
         {
+            this.RenderedViews = new Stack<Func<string>>();
+            
             this.viewRenderers = new List<IRazorViewRenderer>
             {
                 new CSharp.CSharpRazorViewRenderer(),
@@ -60,6 +65,8 @@
         /// <param name="viewEngineStartupContext">Startup context</param>
         public void Initialize(ViewEngineStartupContext viewEngineStartupContext)
         {
+            lastViewSuccessfullyRendered = null;
+            RenderedViews.Clear();
         }
 
         /// <summary>
@@ -99,36 +106,58 @@
 
             response.Contents = stream =>
             {
-                var writer =
-                    new StreamWriter(stream);
-
-                var view = this.GetViewInstance(viewLocationResult, renderContext, referencingAssembly, model);
-
-                view.ExecuteView(null, null);
-
-                var body = view.Body;
-                var sectionContents = view.SectionContents;
-
-                var layout = view.HasLayout ? view.Layout : GetViewStartLayout(model, renderContext, referencingAssembly, isPartial);
-
-                var root = string.IsNullOrWhiteSpace(layout);
-
-                while (!root)
+                try
                 {
-                    view = this.GetViewInstance(renderContext.LocateView(layout, model), renderContext, referencingAssembly, model);
+                    var writer =
+                        new StreamWriter(stream);
 
-                    view.ExecuteView(body, sectionContents);
+                    RenderedViews.Push(
+                        () =>
+                            string.Format("{0} '{1}', called with a {2}", isPartial ? "partial view" : "view",
+                                viewLocationResult.Location + "/" + viewLocationResult.Name + "." + viewLocationResult.Extension,
+                                model == null ? "null model" : "model of type " + model.GetType()));
 
-                    body = view.Body;
-                    sectionContents = view.SectionContents;
+                    var view = this.GetViewInstance(viewLocationResult, renderContext, referencingAssembly, model);
 
-                    layout = view.HasLayout ? view.Layout : GetViewStartLayout(model, renderContext, referencingAssembly, isPartial);
+                    view.ExecuteView(null, null);
 
-                    root = !view.HasLayout;
+                    var body = view.Body;
+                    var sectionContents = view.SectionContents;
+
+                    var layout = view.HasLayout
+                        ? view.Layout
+                        : GetViewStartLayout(model, renderContext, referencingAssembly, isPartial);
+
+                    var root = string.IsNullOrWhiteSpace(layout);
+
+                    while (!root)
+                    {
+                        view = this.GetViewInstance(renderContext.LocateView(layout, model), renderContext, referencingAssembly, model);
+
+                        view.ExecuteView(body, sectionContents);
+
+                        if (RenderedViews.Count >0)
+                        {
+                            lastViewSuccessfullyRendered = RenderedViews.Pop();
+                        }
+
+                        body = view.Body;
+                        sectionContents = view.SectionContents;
+
+                        layout = view.HasLayout ? view.Layout : GetViewStartLayout(model, renderContext, referencingAssembly, isPartial);
+
+                        root = !view.HasLayout;
+                    }
+
+                    writer.Write(body);
+                    writer.Flush();
+                    lastViewSuccessfullyRendered = RenderedViews.Count == 0 ? null : RenderedViews.Pop();
                 }
-
-                writer.Write(body);
-                writer.Flush();
+                catch (Exception exception)
+                {
+                    var wrappedException = FormatException("Rendering the view failed.", exception);
+                    throw wrappedException;
+                }
             };
 
             return response;
@@ -492,6 +521,30 @@
             {
                 disposable.Dispose();
             }
+        }
+
+        private ViewRenderException FormatException(string message, Exception innerException)
+        {
+            if (RenderedViews.Count == 0)
+            {
+                var viewRenderException = innerException as ViewRenderException;
+                return viewRenderException ?? new ViewRenderException(message, innerException);
+            }
+            
+            var inner = new ViewRenderException(message, innerException);
+
+            var sb = new StringBuilder(message).AppendLine();
+            var view = RenderedViews.Pop();
+
+            sb.AppendFormat("There is an error in the {0}", view());
+            if (lastViewSuccessfullyRendered != null)
+            {
+                sb.AppendFormat(" after the call to {0}", lastViewSuccessfullyRendered());
+            }
+
+            sb.AppendLine().AppendLine("Check the inner exception for any further information.");
+
+            return new ViewRenderException(sb.ToString(), inner);
         }
     }
 }

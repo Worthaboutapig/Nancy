@@ -20,6 +20,7 @@
 
             return request.Headers[ajaxRequestHeaderKey].Contains(ajaxRequestHeaderValue);
         }
+
         /// <summary>
         /// Gets a value indicating whether the request is local.
         /// </summary>

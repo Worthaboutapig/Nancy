@@ -15,7 +15,7 @@
 
         private readonly IViewLocationProvider viewLocationProvider;
 
-        private readonly IEnumerable<IViewEngine> viewEngines;
+        private readonly List<string> supportedViewExtensions;
 
         private readonly ReaderWriterLockSlim padlock = new ReaderWriterLockSlim();
 
@@ -23,13 +23,13 @@
 
         public DefaultViewLocator(IViewLocationProvider viewLocationProvider, IEnumerable<IViewEngine> viewEngines)
         {
+            this.supportedViewExtensions = viewEngines.SelectMany(engine => engine.Extensions).Distinct().ToList();
             this.viewLocationProvider = viewLocationProvider;
-            this.viewEngines = viewEngines;
-
+            
             this.invalidCharacters = Path.GetInvalidFileNameChars().Where(c => c != '/').ToArray();
 
             // No need to lock here, we get constructed on app startup
-            this.viewLocationResults = new List<ViewLocationResult>(this.GetInititialViewLocations());
+            this.viewLocationResults = new List<ViewLocationResult>(this.GetInitialViewLocations());
         }
 
         /// <summary>
@@ -151,8 +151,8 @@
             var viewExtension = GetExtensionFromViewName(viewName);
 
             var supportedViewExtensions = String.IsNullOrEmpty(viewExtension)
-                                              ? GetSupportedViewExtensions()
-                                              : new[] { viewExtension };
+                                              ? this.supportedViewExtensions
+                                              : new List<string> { viewExtension };
 
             var location = GetLocationFromViewName(viewName);
             var nameWithoutExtension = GetFilenameWithoutExtensionFromViewName(viewName);
@@ -169,22 +169,12 @@
                        .ToArray();
         }
 
-        private IEnumerable<ViewLocationResult> GetInititialViewLocations()
+        private IEnumerable<ViewLocationResult> GetInitialViewLocations()
         {
-            var supportedViewExtensions =
-                GetSupportedViewExtensions();
-
             var viewsLocatedByProviders =
-                this.viewLocationProvider.GetLocatedViews(supportedViewExtensions);
+                this.viewLocationProvider.GetLocatedViews(this.supportedViewExtensions);
 
             return viewsLocatedByProviders.ToArray();
-        }
-
-        private IEnumerable<string> GetSupportedViewExtensions()
-        {
-            return this.viewEngines
-                .SelectMany(engine => engine.Extensions)
-                .Distinct();
         }
 
         private static string GetAmgiguousViewExceptionMessage(int count, IEnumerable<ViewLocationResult> viewsThatMatchesCritera)

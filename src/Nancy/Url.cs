@@ -83,6 +83,14 @@ namespace Nancy
         /// </summary>
         public string Query { get; set; }
 
+	    public string PathAndQuery
+	    {
+		    get
+		    {
+			    var pqf = Path + "?" + Query;
+			    return pqf;
+		    }
+	    }
 
         /// <summary>
         /// Gets the domain part of the request
