@@ -91,6 +91,23 @@ namespace Nancy
         }
 
         /// <summary>
+        /// Gets and set the path and query together
+        /// </summary>
+        public string PathAndQuery
+        {
+            get
+            {
+                var pathAndQuery = Path + "?" + Query;
+                return pathAndQuery;
+            }
+            set
+            {
+                Query = value;
+                Path = value.Substring(0, value.Length - Query.Length);
+            }
+        }
+
+        /// <summary>
         /// Gets the domain part of the request
         /// </summary>
         public string SiteBase
