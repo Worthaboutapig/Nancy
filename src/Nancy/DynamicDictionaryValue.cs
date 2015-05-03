@@ -363,6 +363,12 @@
             return Guid.Parse(dynamicValue.ToString());
         }
 
+        public static implicit operator Guid?(DynamicDictionaryValue dynamicValue)
+        {
+            return dynamicValue.HasValue
+                       ? (Guid)dynamicValue
+                       : default(Guid?);
+        }
         public static implicit operator DateTime(DynamicDictionaryValue dynamicValue)
         {
             if (dynamicValue.value is DateTime)
