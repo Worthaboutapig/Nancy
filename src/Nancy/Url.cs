@@ -97,7 +97,7 @@ namespace Nancy
         {
             get
             {
-                var pathAndQuery = Path + "?" + Query;
+                var pathAndQuery = Path + Query;
                 return pathAndQuery;
             }
             set
