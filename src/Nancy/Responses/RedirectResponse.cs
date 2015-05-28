@@ -39,15 +39,15 @@ namespace Nancy.Responses
             /// <summary>
             /// HTTP 301 - All future requests should be to this URL
             /// </summary>
-            Permanent,
+            Permanent = 301,
             /// <summary>
             /// HTTP 307 - Redirect this request but allow future requests to the original URL
             /// </summary>
-            Temporary,
+            Temporary = 307,
             /// <summary>
             /// HTTP 303 - Redirect this request using an HTTP GET
             /// </summary>
-            SeeOther
+            SeeOther = 303
         }
     }
 }
