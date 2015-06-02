@@ -100,7 +100,19 @@ namespace Nancy.Responses.Negotiation
             return matches;
         }
 
-        /// <summary>
+		/// <summary>
+		/// Whether or not a media range matches another, taking into account wildcards and parameters
+		/// </summary>
+		/// <param name="other">Other media range</param>
+		/// <returns>True if matching, false if not</returns>
+		public bool MatchesExactlyWithParameters(MediaRange other)
+		{
+			var matches = this.MatchesExactly(other) && this.Parameters.Matches(other.Parameters);
+			return matches;
+		}
+
+		
+		/// <summary>
         /// Whether or not a media range matches another exactly
         /// </summary>
         /// <param name="other">Other media range</param>
